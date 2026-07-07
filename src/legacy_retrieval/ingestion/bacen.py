@@ -161,21 +161,26 @@ class BacenFetcher(BaseFetcher):
         lines = [
             f"BACEN IF.data — Carteira de Crédito por instituição (data-base {quarter}).",
             f"Fonte: API Olinda IFDATA, TipoInstituicao={TIPO_INSTITUICAO}, Relatório Resumo.",
-            f"Carteira total do sistema financeiro: R$ {total:,.0f}.",
+            f"Carteira de crédito total do sistema financeiro nacional: R$ {total:,.0f}.",
             "",
-            "Top 30 instituições por carteira de crédito (R$ e % do sistema):",
+            "MARKET SHARE POR GRUPO ECONÔMICO (soma de todas as entidades reguladas "
+            "do grupo — use estes valores para market share de bancos):",
         ]
-        for _, row in top.iterrows():
-            lines.append(
-                f"- {row['instituicao']}: R$ {row['carteira_credito']:,.0f} "
-                f"({row['market_share_pct']:.2f}% do sistema)"
-            )
-        lines.append("")
-        lines.append("Grupos econômicos (soma das entidades reguladas):")
         for group, codes in INSTITUTION_GROUPS.items():
             value = df[df["cod_inst"].isin(codes)]["carteira_credito"].sum()
             lines.append(
-                f"- {group}: R$ {value:,.0f} ({100 * value / total:.2f}% do sistema)"
+                f"- Market share do grupo {group}: {100 * value / total:.2f}% do sistema "
+                f"(carteira de crédito R$ {value:,.0f})"
+            )
+        lines.append("")
+        lines.append(
+            "Carteira por ENTIDADE REGULADA INDIVIDUAL (top 30; grupos como Nubank e "
+            "Itaú possuem mais de uma entidade — não usar isoladamente para market share do grupo):"
+        )
+        for _, row in top.iterrows():
+            lines.append(
+                f"- {row['instituicao']} (entidade individual): R$ {row['carteira_credito']:,.0f} "
+                f"({row['market_share_pct']:.2f}% do sistema)"
             )
 
         year, month = int(quarter[:4]), int(quarter[4:])

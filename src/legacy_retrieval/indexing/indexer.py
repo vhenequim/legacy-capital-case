@@ -134,7 +134,7 @@ class DocumentIndexer:
         if not self._chunks:
             return []
 
-        query_vector = self.embedding_provider.embed([query])[0]
+        query_vector = self.embedding_provider.embed([query], is_query=True)[0]
         client = self._get_qdrant()
 
         results = client.query_points(

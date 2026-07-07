@@ -71,7 +71,7 @@ class GroundedGenerator:
             return True
         top = results[0]
         if top.source == "rerank":
-            return top.score < -8.0
+            return top.score < self.settings.rerank_refusal_threshold
         return top.score < 0.008
 
     def _generate_openai(self, question: str, context: str) -> str:

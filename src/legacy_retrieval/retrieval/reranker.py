@@ -6,7 +6,7 @@ class CrossEncoderReranker:
     def __init__(self, settings: Settings | None = None, model_name: str | None = None) -> None:
         self.settings = settings or get_settings()
         self._model = None
-        self._model_name = model_name or "cross-encoder/ms-marco-MiniLM-L-6-v2"
+        self._model_name = model_name or self.settings.reranker_model
         self._available: bool | None = None
 
     def _load_model(self) -> bool:
@@ -21,7 +21,12 @@ class CrossEncoderReranker:
             self._available = False
         return self._available
 
-    def rerank(self, query: str, results: list[RetrievedChunk]) -> list[RetrievedChunk]:
+    def rerank(
+        self,
+        query: str,
+        results: list[RetrievedChunk],
+        top_n: int | None = None,
+    ) -> list[RetrievedChunk]:
         if not results:
             return []
 
@@ -36,4 +41,4 @@ class CrossEncoderReranker:
             for r, s in zip(results, scores, strict=True)
         ]
         reranked.sort(key=lambda r: r.score, reverse=True)
-        return reranked[: self.settings.rerank_top_k]
+        return reranked[: top_n or self.settings.rerank_top_k]

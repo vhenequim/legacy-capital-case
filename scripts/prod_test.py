@@ -83,12 +83,13 @@ def ingest(
     """Ingest real Case A data from SEC + news."""
     _run([
         sys.executable,
-        "scripts/ingest_case_a.py",
+        "scripts/ingest_cases.py",
+        "--case",
+        "A",
         "--since",
         since,
         "--max",
         str(max_filings),
-        "--fresh",
     ])
 
 

@@ -26,4 +26,21 @@ class RetrievalPipeline:
         return self.generator.generate(question, reranked)
 
     def retrieve_only(self, question: str, top_k: int | None = None) -> list[str]:
-        return self.retriever.retrieve_document_ids(question, top_k=top_k)
+        """Top-k DOCUMENTOS do sistema completo (híbrido + rerank).
+
+        Busca um pool largo de chunks, aplica o reranker e deduplica por
+        documento — é o ranking que o gerador realmente consome.
+        """
+        k = top_k or self.settings.rerank_top_k
+        candidates = self.retriever.retrieve(question, top_k=self.settings.retrieval_top_k)
+        reranked = self.reranker.rerank(question, candidates, top_n=self.settings.retrieval_top_k)
+
+        seen: set[str] = set()
+        doc_ids: list[str] = []
+        for r in reranked:
+            if r.chunk.document_id not in seen:
+                seen.add(r.chunk.document_id)
+                doc_ids.append(r.chunk.document_id)
+            if len(doc_ids) >= k:
+                break
+        return doc_ids

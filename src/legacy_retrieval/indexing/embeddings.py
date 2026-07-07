@@ -7,7 +7,7 @@ from legacy_retrieval.config import Settings, get_settings
 
 class EmbeddingProvider(ABC):
     @abstractmethod
-    def embed(self, texts: list[str]) -> list[list[float]]:
+    def embed(self, texts: list[str], is_query: bool = False) -> list[list[float]]:
         ...
 
     @property
@@ -17,13 +17,18 @@ class EmbeddingProvider(ABC):
 
 
 class LocalEmbeddingProvider(EmbeddingProvider):
-    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> None:
+    def __init__(self, model_name: str = "intfloat/multilingual-e5-small") -> None:
         from sentence_transformers import SentenceTransformer
 
         self._model = SentenceTransformer(model_name)
         self._dimension = self._model.get_embedding_dimension()
+        # Modelos E5 exigem prefixos assimétricos query:/passage:
+        self._use_e5_prefix = "e5" in model_name.lower()
 
-    def embed(self, texts: list[str]) -> list[list[float]]:
+    def embed(self, texts: list[str], is_query: bool = False) -> list[list[float]]:
+        if self._use_e5_prefix:
+            prefix = "query: " if is_query else "passage: "
+            texts = [prefix + t for t in texts]
         vectors = self._model.encode(texts, show_progress_bar=False, normalize_embeddings=True)
         return [v.tolist() for v in vectors]
 
@@ -40,7 +45,7 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
         self._client = OpenAI(api_key=self.settings.openai_api_key)
         self._dimension = 1536
 
-    def embed(self, texts: list[str]) -> list[list[float]]:
+    def embed(self, texts: list[str], is_query: bool = False) -> list[list[float]]:
         response = self._client.embeddings.create(
             model=self.settings.openai_embedding_model,
             input=texts,
@@ -56,7 +61,7 @@ def get_embedding_provider(settings: Settings | None = None) -> EmbeddingProvide
     settings = settings or get_settings()
     if settings.embedding_provider == "openai" and settings.openai_api_key:
         return OpenAIEmbeddingProvider(settings)
-    return LocalEmbeddingProvider()
+    return LocalEmbeddingProvider(settings.embedding_model)
 
 
 def cosine_similarity(a: list[float], b: list[float]) -> float:
