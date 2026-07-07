@@ -1,0 +1,123 @@
+# Investor Relations site configs for Case A hyperscalers.
+# Each entry defines seed pages and link patterns — NOT site-specific parsers.
+# Add a new company by copying a block and adjusting URLs.
+
+MSFT:
+  base_url: https://www.microsoft.com
+  seed_urls:
+    - https://www.microsoft.com/en-us/investor/earnings
+    - https://www.microsoft.com/en-us/investor/events
+  allowed_domains:
+    - microsoft.com
+    - cloudfront.net
+    - aka.ms
+  link_patterns:
+    - earnings
+    - latestearnings
+    - press-release
+    - presentation
+    - transcript
+    - .pdf
+  max_documents: 20
+
+AMZN:
+  base_url: https://ir.aboutamazon.com
+  seed_urls:
+    - https://ir.aboutamazon.com/quarterly-results/default.aspx
+    - https://ir.aboutamazon.com/news-releases/default.aspx
+  allowed_domains:
+    - aboutamazon.com
+    - amazon.com
+    - q4cdn.com
+  link_patterns:
+    - quarterly
+    - earnings
+    - release
+    - presentation
+    - transcript
+    - .pdf
+  max_documents: 20
+
+GOOGL:
+  base_url: https://abc.xyz
+  seed_urls:
+    - https://abc.xyz/investor/earnings/
+    - https://abc.xyz/investor/news/
+  allowed_domains:
+    - abc.xyz
+    - google.com
+    - q4cdn.com
+  link_patterns:
+    - earnings
+    - release
+    - presentation
+    - transcript
+    - .pdf
+  max_documents: 20
+
+META:
+  base_url: https://investor.atmeta.com
+  seed_urls:
+    - https://investor.atmeta.com/financials/default.aspx
+    - https://investor.atmeta.com/news/default.aspx
+  allowed_domains:
+    - atmeta.com
+    - meta.com
+    - q4cdn.com
+  link_patterns:
+    - earnings
+    - release
+    - presentation
+    - transcript
+    - .pdf
+  max_documents: 20
+
+NVDA:
+  base_url: https://investor.nvidia.com
+  seed_urls:
+    - https://investor.nvidia.com/financial-info/quarterly-results/default.aspx
+    - https://investor.nvidia.com/events-and-presentations/default.aspx
+  allowed_domains:
+    - nvidia.com
+    - q4cdn.com
+  link_patterns:
+    - earnings
+    - quarterly
+    - presentation
+    - release
+    - transcript
+    - .pdf
+  max_documents: 20
+
+ORCL:
+  base_url: https://investor.oracle.com
+  seed_urls:
+    - https://investor.oracle.com/financials/quarterly-results/default.aspx
+    - https://investor.oracle.com/investor-news/default.aspx
+  allowed_domains:
+    - oracle.com
+    - q4cdn.com
+  link_patterns:
+    - earnings
+    - quarterly
+    - release
+    - presentation
+    - transcript
+    - .pdf
+  max_documents: 20
+
+CRWV:
+  base_url: https://investors.coreweave.com
+  seed_urls:
+    - https://investors.coreweave.com/financials/quarterly-results
+    - https://investors.coreweave.com/news-events/press-releases
+  allowed_domains:
+    - coreweave.com
+    - q4cdn.com
+  link_patterns:
+    - earnings
+    - quarterly
+    - release
+    - presentation
+    - .pdf
+  max_documents: 15
