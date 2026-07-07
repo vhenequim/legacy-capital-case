@@ -46,7 +46,7 @@ def test_refusal_correct():
 
 
 def test_chunker_splits_long_document():
-    content = "word " * 300
+    content = "word " * 800  # ~4000 chars > chunk_size (1800)
     doc = _make_doc("doc1", "TEST", content)
     chunker = Chunker()
     chunks = chunker.chunk_document(doc)
@@ -78,19 +78,34 @@ def test_extract_rpo_metrics():
 def test_market_share_calculation():
     df = pd.DataFrame(
         {
-            "instituicao": ["NU PAGAMENTOS", "OTHER"],
-            "carteira_ativa": [100, 900],
-            "carteira_total_sistema": [1000, 1000],
-            "data_base": ["2024-09", "2024-09"],
+            "cod_inst": ["18236120", "30680829", "60746948"],
+            "instituicao": ["NU PAGAMENTOS", "NU FINANCEIRA", "BRADESCO"],
+            "carteira_credito": [60.0, 40.0, 900.0],
+            "carteira_total_sistema": [1000.0, 1000.0, 1000.0],
+            "data_base": ["202603", "202603", "202603"],
         }
     )
-    result = calculate_market_share(df, "NU PAGAMENTOS")
-    assert result.iloc[0]["market_share"] == pytest.approx(0.1)
+    # Grupo econômico soma as duas entidades do Nubank
+    result = calculate_market_share(df, "NUBANK")
+    assert result is not None
+    assert result["market_share"] == pytest.approx(0.1)
+
+    # Busca por nome de instituição individual
+    result = calculate_market_share(df, "BRADESCO")
+    assert result["market_share"] == pytest.approx(0.9)
 
 
-def test_pipeline_query_with_demo_docs():
+def test_pipeline_query_end_to_end():
+    from legacy_retrieval.config import Settings
     from legacy_retrieval.indexing.indexer import DocumentIndexer
     from legacy_retrieval.pipeline import RetrievalPipeline
+
+    # Geração local (sem API externa) e collection isolada para o teste
+    settings = Settings(
+        llm_provider="local",
+        embedding_provider="local",
+        qdrant_collection="test_legacy_pipeline",
+    )
 
     docs = [
         _make_doc(
@@ -104,13 +119,70 @@ def test_pipeline_query_with_demo_docs():
             "NVIDIA noted unprecedented demand for AI infrastructure from hyperscalers.",
         ),
     ]
-    indexer = DocumentIndexer()
-    indexer.index_documents(docs)
-    pipeline = RetrievalPipeline(indexer)
+    indexer = DocumentIndexer(settings)
+    try:
+        indexer.index_documents(docs)
+    except ConnectionError:
+        pytest.skip("Qdrant indisponível — suba com: docker compose up -d qdrant")
 
-    response = pipeline.query("What is Microsoft capex guidance for 2025?")
-    assert not response.refused
-    assert "80" in response.answer or "billion" in response.answer.lower()
+    try:
+        pipeline = RetrievalPipeline(indexer, settings)
 
-    refused = pipeline.query("xyzzy completely unrelated quantum physics zebra topic")
-    assert refused.refused
+        response = pipeline.query("What is Microsoft capex guidance for 2025?")
+        assert not response.refused
+        assert "80" in response.answer or "billion" in response.answer.lower()
+
+        refused = pipeline.query("xyzzy completely unrelated quantum physics zebra topic")
+        assert refused.refused
+    finally:
+        indexer._get_qdrant().delete_collection("test_legacy_pipeline")
+
+
+def test_rpo_extraction_press_release_styles():
+    from legacy_retrieval.structured.rpo import best_total_rpo, extract_rpo_observations
+
+    # Estilo Salesforce: "Total Remaining Performance Obligation $63B, up 11% Y/Y"
+    doc = _make_doc(
+        "crm_8k",
+        "CRM",
+        "Salesforce Announces Results. Total Remaining Performance Obligation $63B, up 11% Y/Y.",
+    )
+    best = best_total_rpo(extract_rpo_observations(doc))
+    assert best is not None
+    assert best.value == pytest.approx(63e9)
+    assert best.stated_yoy_pct == pytest.approx(11.0)
+
+    # Estilo Palo Alto: "grew 21% year over year to $13.0 billion"
+    doc = _make_doc(
+        "panw_8k",
+        "PANW",
+        "Remaining performance obligation grew 21% year over year to $13.0 billion.",
+    )
+    best = best_total_rpo(extract_rpo_observations(doc))
+    assert best.value == pytest.approx(13e9)
+    assert best.stated_yoy_pct == pytest.approx(21.0)
+
+
+def test_rpo_extraction_ignores_guidance_range():
+    from legacy_retrieval.structured.rpo import extract_rpo_observations
+
+    doc = _make_doc(
+        "panw_guidance",
+        "PANW",
+        "FY 2026 Guidance: Remaining Performance Obligation $15.2B - $15.3B, 19% - 20% y/y.",
+    )
+    assert extract_rpo_observations(doc) == []
+
+
+def test_rpo_extraction_crpo_is_not_total():
+    from legacy_retrieval.structured.rpo import best_total_rpo, extract_rpo_observations
+
+    doc = _make_doc(
+        "crm_q1",
+        "CRM",
+        "Current remaining performance obligation of $29.6 billion, up 12% Y/Y.",
+    )
+    obs = extract_rpo_observations(doc)
+    assert len(obs) == 1
+    assert obs[0].metric == "crpo"
+    assert best_total_rpo(obs) is None

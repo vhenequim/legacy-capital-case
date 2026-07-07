@@ -1,6 +1,7 @@
 import hashlib
 import json
 import pickle
+import re
 from pathlib import Path
 
 from qdrant_client import QdrantClient
@@ -70,8 +71,10 @@ class DocumentIndexer:
         self._index_vectors(all_chunks)
         return all_chunks
 
+    _TOKEN_RE = re.compile(r"[a-z0-9áàâãéêíóôõúç]+")
+
     def _tokenize(self, text: str) -> list[str]:
-        return text.lower().split()
+        return self._TOKEN_RE.findall(text.lower())
 
     def _rebuild_bm25(self) -> None:
         self._tokenized_corpus = [self._tokenize(c.text) for c in self._chunks]
@@ -134,11 +137,11 @@ class DocumentIndexer:
         query_vector = self.embedding_provider.embed([query])[0]
         client = self._get_qdrant()
 
-        results = client.search(
+        results = client.query_points(
             collection_name=self.settings.qdrant_collection,
-            query_vector=query_vector,
+            query=query_vector,
             limit=top_k,
-        )
+        ).points
 
         chunk_by_id = {c.id: c for c in self._chunks}
         output: list[tuple[Chunk, float]] = []

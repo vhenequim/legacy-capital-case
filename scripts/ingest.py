@@ -51,8 +51,7 @@ def main(
     fetcher = fetcher_cls(settings)
 
     if source == "bacen":
-        docs = fetcher.fetch(dataset="scr")
-        docs.extend(fetcher.fetch(dataset="ifdata"))
+        docs = fetcher.fetch(dataset="ifdata")
     elif source in {"cvm", "ri"}:
         if not company:
             console.print("[red]--company required for cvm/ri[/red]")
