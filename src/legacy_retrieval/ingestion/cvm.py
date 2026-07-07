@@ -34,15 +34,17 @@ CVM_COMPANY_CODES: dict[str, tuple[str, str]] = {
 
 def _relevant(row: dict) -> bool:
     categoria = (row.get("Categoria") or "").strip()
-    tipo = (row.get("Tipo") or "").strip()
+    tipo = (row.get("Tipo") or "").strip().lower()
     assunto = (row.get("Assunto") or "").strip().lower()
 
     if categoria.startswith("Dados Econ"):
-        return True
+        # Press-releases de resultado; exclui Demonstrações Financeiras
+        # completas (PDFs de centenas de páginas, baixo valor por página)
+        return "press-release" in tipo
     if categoria.startswith("Fato Relevante"):
         return True
     if categoria.startswith("Comunicado ao Mercado"):
-        return "esultado" in assunto or "presenta" in tipo.lower()
+        return "esultado" in assunto or "presenta" in tipo
     return False
 
 
@@ -137,11 +139,27 @@ class CvmFetcher(BaseFetcher):
         for row in candidates:
             if len(documents) >= max_docs:
                 break
+            cached = self._load_cached(company.upper(), row)
+            if cached is not None:
+                documents.append(cached)
+                continue
             doc = self._download_row(company.upper(), row)
             if doc is not None:
                 documents.append(doc)
                 self._save_to_cache(doc)
         return documents
+
+    def _load_cached(self, ticker: str, row: dict) -> Document | None:
+        link = (row.get("Link_Download") or "").strip()
+        if not link:
+            return None
+        digest = hashlib.sha256(link.encode()).hexdigest()[:12]
+        path = (
+            self.settings.raw_data_dir / "cvm" / ticker.lower() / f"cvm_{ticker.lower()}_{digest}.json"
+        )
+        if path.exists():
+            return Document.model_validate_json(path.read_text(encoding="utf-8"))
+        return None
 
     def _download_row(self, ticker: str, row: dict) -> Document | None:
         link = (row.get("Link_Download") or "").strip()
