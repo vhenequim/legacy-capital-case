@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"
 
+    # Groq (free tier, OpenAI-compatible API) — set LLM_PROVIDER=groq
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.3-70b-versatile"
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+
     # Ollama (free local LLM) — set LLM_PROVIDER=ollama
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"

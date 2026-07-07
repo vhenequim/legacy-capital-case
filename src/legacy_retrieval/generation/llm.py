@@ -44,7 +44,9 @@ class GroundedGenerator:
 
         context, citations = self.evidence_builder.build(results)
 
-        if self.settings.llm_provider == "openai" and self.settings.openai_api_key:
+        if self.settings.llm_provider == "groq" and self.settings.groq_api_key:
+            answer = self._generate_groq(question, context)
+        elif self.settings.llm_provider == "openai" and self.settings.openai_api_key:
             answer = self._generate_openai(question, context)
         elif self.settings.llm_provider == "ollama":
             answer = self._generate_ollama(question, context)
@@ -73,11 +75,36 @@ class GroundedGenerator:
         return top.score < 0.008
 
     def _generate_openai(self, question: str, context: str) -> str:
+        return self._chat_completion(
+            api_key=self.settings.openai_api_key,
+            base_url=None,
+            model=self.settings.openai_model,
+            question=question,
+            context=context,
+        )
+
+    def _generate_groq(self, question: str, context: str) -> str:
+        return self._chat_completion(
+            api_key=self.settings.groq_api_key,
+            base_url=self.settings.groq_base_url,
+            model=self.settings.groq_model,
+            question=question,
+            context=context,
+        )
+
+    def _chat_completion(
+        self,
+        api_key: str,
+        base_url: str | None,
+        model: str,
+        question: str,
+        context: str,
+    ) -> str:
         from openai import OpenAI
 
-        client = OpenAI(api_key=self.settings.openai_api_key)
+        client = OpenAI(api_key=api_key, base_url=base_url)
         response = client.chat.completions.create(
-            model=self.settings.openai_model,
+            model=model,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {

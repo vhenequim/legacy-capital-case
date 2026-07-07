@@ -1,3 +1,4 @@
+import hashlib
 import json
 import pickle
 from pathlib import Path
@@ -30,16 +31,18 @@ class DocumentIndexer:
         self._bm25: BM25Okapi | None = None
         self._tokenized_corpus: list[list[str]] = []
         self._qdrant: QdrantClient | None = None
-        self._use_memory = False
 
     def _get_qdrant(self) -> QdrantClient:
         if self._qdrant is None:
+            client = QdrantClient(url=self.settings.qdrant_url, check_compatibility=False)
             try:
-                self._qdrant = QdrantClient(url=self.settings.qdrant_url, check_compatibility=False)
-                self._qdrant.get_collections()
-            except Exception:
-                self._qdrant = QdrantClient(":memory:")
-                self._use_memory = True
+                client.get_collections()
+            except Exception as exc:
+                raise ConnectionError(
+                    f"Qdrant indisponível em {self.settings.qdrant_url}. "
+                    "Suba o serviço com: docker compose up -d qdrant"
+                ) from exc
+            self._qdrant = client
         return self._qdrant
 
     def _ensure_collection(self) -> None:
@@ -96,8 +99,13 @@ class DocumentIndexer:
 
     @staticmethod
     def _make_point(chunk: Chunk, vector: list[float]) -> PointStruct:
+        # ID determinístico: hash() do Python é salteado por processo e
+        # geraria pontos duplicados a cada reindexação.
+        point_id = int.from_bytes(
+            hashlib.sha256(chunk.id.encode()).digest()[:8], "big", signed=False
+        ) % (2**63)
         return PointStruct(
-            id=hash(chunk.id) % (2**63),
+            id=point_id,
             vector=vector,
             payload={
                 "chunk_id": chunk.id,
@@ -126,14 +134,11 @@ class DocumentIndexer:
         query_vector = self.embedding_provider.embed([query])[0]
         client = self._get_qdrant()
 
-        try:
-            results = client.search(
-                collection_name=self.settings.qdrant_collection,
-                query_vector=query_vector,
-                limit=top_k,
-            )
-        except Exception:
-            return []
+        results = client.search(
+            collection_name=self.settings.qdrant_collection,
+            query_vector=query_vector,
+            limit=top_k,
+        )
 
         chunk_by_id = {c.id: c for c in self._chunks}
         output: list[tuple[Chunk, float]] = []
