@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 
 import feedparser
@@ -8,11 +9,13 @@ from legacy_retrieval.ingestion.base import BaseFetcher
 from legacy_retrieval.models import DocType, Document
 from legacy_retrieval.parsing.html import parse_html
 
-DEFAULT_FEEDS: dict[str, list[str]] = {
-    "NVDA": ["https://feeds.finance.yahoo.com/rss/2.0/headline?s=NVDA&region=US&lang=en-US"],
-    "MSFT": ["https://feeds.finance.yahoo.com/rss/2.0/headline?s=MSFT&region=US&lang=en-US"],
-    "META": ["https://feeds.finance.yahoo.com/rss/2.0/headline?s=META&region=US&lang=en-US"],
-}
+YAHOO_FEED_TEMPLATE = (
+    "https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US"
+)
+
+
+def default_feeds(ticker: str) -> list[str]:
+    return [YAHOO_FEED_TEMPLATE.format(ticker=ticker.upper())]
 
 
 class NewsFetcher(BaseFetcher):
@@ -31,7 +34,7 @@ class NewsFetcher(BaseFetcher):
         max_items: int = 20,
         **kwargs: object,
     ) -> list[Document]:
-        feed_urls = feeds or DEFAULT_FEEDS.get(company.upper(), [])
+        feed_urls = feeds or default_feeds(company)
         documents: list[Document] = []
 
         for feed_url in feed_urls:
@@ -59,7 +62,8 @@ class NewsFetcher(BaseFetcher):
                     except Exception:
                         pass
 
-                doc_id = f"news_{company.lower()}_{hash(link or title) % 10**10}"
+                digest = hashlib.sha256((link or title).encode()).hexdigest()[:12]
+                doc_id = f"news_{company.lower()}_{digest}"
                 documents.append(
                     Document(
                         id=doc_id,

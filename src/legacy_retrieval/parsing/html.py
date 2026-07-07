@@ -1,4 +1,8 @@
-from bs4 import BeautifulSoup
+import warnings
+
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
+
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 
 def parse_html(html: str) -> str:

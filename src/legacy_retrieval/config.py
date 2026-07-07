@@ -31,8 +31,10 @@ class Settings(BaseSettings):
     raw_data_dir: Path = Path("./data/raw")
     processed_data_dir: Path = Path("./data/processed")
 
-    chunk_size: int = 512
-    chunk_overlap: int = 64
+    # Em CARACTERES (~300 tokens). Chunks maiores preservam contexto de
+    # tabelas financeiras e reduzem o volume de embeddings.
+    chunk_size: int = 1800
+    chunk_overlap: int = 200
     retrieval_top_k: int = 20
     rerank_top_k: int = 10
     evidence_threshold: float = 0.3
