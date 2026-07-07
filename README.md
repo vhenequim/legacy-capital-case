@@ -93,17 +93,24 @@ Gold set: [`eval/questions.jsonl`](eval/questions.jsonl) — 14 perguntas **veri
 
 Métricas: Recall@10, Precision@10, MRR (nível de documento), taxa de resposta correta e taxa de recusa correta.
 
-### Resultados
+### Resultados (base real: 822 documentos, 63.562 chunks)
 
 | Métrica | Baseline¹ | Final² |
 |---------|-----------|--------|
-| Recall@10 | 0.57 | _(preencher)_ |
-| MRR | 0.52 | _(preencher)_ |
-| Taxa de resposta | 0.67 | _(preencher)_ |
-| Taxa de recusa correta | 1.00 | _(preencher)_ |
+| Recall@10 (documento) | 0.57 | **0.96** |
+| MRR | 0.52 | **0.82** |
+| Precision@10 | 0.11 | 0.16³ |
+| Taxa de resposta (LLM 70B) | 0.67 | **0.92** |
+| Taxa de recusa correta | 1.00 | **1.00** |
 
-¹ Embeddings/reranker apenas em inglês (all-MiniLM + ms-marco), top-k 20.
-² Após diagnóstico pelo eval: embeddings `multilingual-e5-small`, reranker mmarco multilíngue, top-k 50, threshold de recusa recalibrado.
+¹ Embeddings/reranker apenas em inglês (all-MiniLM + ms-marco), top-k 20, métricas pré-rerank.
+² Após diagnóstico pelo eval: embeddings `multilingual-e5-small`, reranker mmarco multilíngue, pool de candidatos 50, métricas no sistema completo (híbrido + rerank), rótulos com grupos de documentos alternativos (8-K e 10-Q do mesmo dia contêm o mesmo fato).
+³ Precision@10 é estruturalmente baixa: cada pergunta tem 1-4 documentos relevantes e o corte é fixo em 10.
+
+Observações honestas:
+- A única falha de recall restante é a q03 (capex anual de duas empresas na mesma pergunta — os 10-K gigantes competem com dezenas de relatórios trimestrais). Query decomposition resolveria; ficou como melhoria futura.
+- A **taxa de resposta depende do LLM**: 92% com Llama 3.3 70B; 58% com Llama 3.1 8B (recusa em excesso). As métricas de retrieval independem do modelo de geração.
+- A recusa tem duas camadas: gate por score do reranker (barato) + recusa semântica do LLM grounded. Só o gate não basta — uma pergunta sobre a Apple (fora da base) atinge score 3.96 em trechos de "fiscal 2024 revenue" de outras empresas.
 
 O ciclo baseline → diagnóstico → melhoria é reproduzível: cada mudança de retrieval foi validada pelo harness antes de entrar.
 

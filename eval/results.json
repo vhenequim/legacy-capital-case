@@ -1,9 +1,9 @@
 {
   "k": 10,
-  "mean_recall_at_k": 0.7917,
-  "mean_precision_at_k": 0.15,
-  "mean_mrr": 0.725,
-  "answer_rate": 0.8333,
+  "mean_recall_at_k": 0.9583,
+  "mean_precision_at_k": 0.1583,
+  "mean_mrr": 0.8194,
+  "answer_rate": 0.5833,
   "refusal_rate": 1.0,
   "per_question": [
     {
@@ -11,15 +11,15 @@
       "category": "single_document",
       "recall_at_k": 1.0,
       "precision_at_k": 0.2,
-      "mrr": 0.5,
-      "refusal_correct": true
+      "mrr": 1.0,
+      "refusal_correct": false
     },
     {
       "id": "q02",
       "category": "single_document",
-      "recall_at_k": 0.0,
-      "precision_at_k": 0.0,
-      "mrr": 0.0,
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 0.5,
       "refusal_correct": false
     },
     {
@@ -27,21 +27,21 @@
       "category": "multi_document",
       "recall_at_k": 0.5,
       "precision_at_k": 0.1,
-      "mrr": 0.2,
-      "refusal_correct": true
+      "mrr": 0.3333,
+      "refusal_correct": false
     },
     {
       "id": "q04",
       "category": "single_document",
-      "recall_at_k": 0.5,
+      "recall_at_k": 1.0,
       "precision_at_k": 0.1,
-      "mrr": 0.5,
+      "mrr": 1.0,
       "refusal_correct": true
     },
     {
       "id": "q05",
       "category": "single_document",
-      "recall_at_k": 0.5,
+      "recall_at_k": 1.0,
       "precision_at_k": 0.1,
       "mrr": 1.0,
       "refusal_correct": true
@@ -83,8 +83,8 @@
       "category": "single_document",
       "recall_at_k": 1.0,
       "precision_at_k": 0.1,
-      "mrr": 1.0,
-      "refusal_correct": true
+      "mrr": 0.5,
+      "refusal_correct": false
     },
     {
       "id": "q09",
@@ -92,7 +92,7 @@
       "recall_at_k": 1.0,
       "precision_at_k": 0.2,
       "mrr": 1.0,
-      "refusal_correct": true
+      "refusal_correct": false
     },
     {
       "id": "q10",
@@ -100,7 +100,7 @@
       "recall_at_k": 1.0,
       "precision_at_k": 0.1,
       "mrr": 1.0,
-      "refusal_correct": false
+      "refusal_correct": true
     },
     {
       "id": "q11",

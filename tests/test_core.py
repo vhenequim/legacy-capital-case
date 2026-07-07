@@ -100,11 +100,14 @@ def test_pipeline_query_end_to_end():
     from legacy_retrieval.indexing.indexer import DocumentIndexer
     from legacy_retrieval.pipeline import RetrievalPipeline
 
-    # Geração local (sem API externa) e collection isolada para o teste
+    # Geração local (sem API externa) e collection isolada para o teste.
+    # Threshold relaxado: docs sintéticos de uma frase pontuam mais baixo
+    # que conteúdo real no cross-encoder.
     settings = Settings(
         llm_provider="local",
         embedding_provider="local",
         qdrant_collection="test_legacy_pipeline",
+        rerank_refusal_threshold=-5.0,
     )
 
     docs = [
@@ -186,3 +189,11 @@ def test_rpo_extraction_crpo_is_not_total():
     assert len(obs) == 1
     assert obs[0].metric == "crpo"
     assert best_total_rpo(obs) is None
+
+
+def test_metrics_with_alternative_groups():
+    # Grupo satisfeito por qualquer alternativa (8-K OU 10-Q do mesmo dia)
+    expected = [["doc_8k", "doc_10q"], "doc_unico"]
+    assert recall_at_k(["doc_10q", "x", "doc_unico"], expected, k=3) == 1.0
+    assert recall_at_k(["doc_10q", "x", "y"], expected, k=3) == 0.5
+    assert mrr(["x", "doc_8k"], expected) == pytest.approx(0.5)

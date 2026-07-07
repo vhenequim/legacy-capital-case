@@ -1,6 +1,6 @@
 """Tests for IR scraper link discovery logic."""
 
-from legacy_retrieval.ingestion.ir_scraper import IrScraper, IrSiteConfig
+from legacy_retrieval.ingestion.ir_scraper import IrScraper
 
 
 def test_domain_allowed():

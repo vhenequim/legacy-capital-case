@@ -67,7 +67,9 @@ class QueryResponse(BaseModel):
 class EvalQuestion(BaseModel):
     id: str
     question: str
-    expected_doc_ids: list[str] = Field(default_factory=list)
+    # Cada item é um doc obrigatório OU um grupo de docs alternativos
+    # (qualquer um do grupo satisfaz — ex.: 8-K e 10-Q do mesmo trimestre)
+    expected_doc_ids: list[str | list[str]] = Field(default_factory=list)
     expected_chunk_ids: list[str] = Field(default_factory=list)
     category: str
     answerable: bool = True

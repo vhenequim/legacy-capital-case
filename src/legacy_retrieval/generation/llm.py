@@ -45,7 +45,12 @@ class GroundedGenerator:
         context, citations = self.evidence_builder.build(results)
 
         if self.settings.llm_provider == "groq" and self.settings.groq_api_key:
-            answer = self._generate_groq(question, context)
+            try:
+                answer = self._generate_groq(question, context)
+            except Exception:
+                # API indisponível/rate limit: degrada para extractivo em vez
+                # de derrubar o pipeline (o retrieval continua íntegro)
+                answer = self._generate_extractive(question, results, citations)
         elif self.settings.llm_provider == "openai" and self.settings.openai_api_key:
             answer = self._generate_openai(question, context)
         elif self.settings.llm_provider == "ollama":
