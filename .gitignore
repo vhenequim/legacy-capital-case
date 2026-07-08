@@ -32,3 +32,6 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Guia de estudo pessoal (nao faz parte do deliverable)
+GuiaEstudo_LegacyRetrieval.jsx
