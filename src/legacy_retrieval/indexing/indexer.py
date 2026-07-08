@@ -122,24 +122,46 @@ class DocumentIndexer:
             },
         )
 
-    def bm25_search(self, query: str, top_k: int) -> list[tuple[Chunk, float]]:
+    def bm25_search(
+        self,
+        query: str,
+        top_k: int,
+        companies: set[str] | None = None,
+    ) -> list[tuple[Chunk, float]]:
         if not self._bm25 or not self._chunks:
             return []
 
         scores = self._bm25.get_scores(self._tokenize(query))
-        ranked = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)[:top_k]
+        indices: list[int] | range = range(len(self._chunks))
+        if companies:
+            indices = [i for i in indices if self._chunks[i].company in companies]
+        ranked = sorted(((i, scores[i]) for i in indices), key=lambda x: x[1], reverse=True)[:top_k]
         return [(self._chunks[i], float(s)) for i, s in ranked]
 
-    def vector_search(self, query: str, top_k: int) -> list[tuple[Chunk, float]]:
+    def vector_search(
+        self,
+        query: str,
+        top_k: int,
+        companies: set[str] | None = None,
+    ) -> list[tuple[Chunk, float]]:
         if not self._chunks:
             return []
 
         query_vector = self.embedding_provider.embed([query], is_query=True)[0]
         client = self._get_qdrant()
 
+        query_filter = None
+        if companies:
+            from qdrant_client.models import FieldCondition, Filter, MatchAny
+
+            query_filter = Filter(
+                must=[FieldCondition(key="company", match=MatchAny(any=sorted(companies)))]
+            )
+
         results = client.query_points(
             collection_name=self.settings.qdrant_collection,
             query=query_vector,
+            query_filter=query_filter,
             limit=top_k,
         ).points
 

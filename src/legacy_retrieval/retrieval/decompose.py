@@ -47,6 +47,28 @@ CASED_ALIASES: dict[str, list[str]] = {
     "MNDY": ["Monday.com", "monday.com"],
 }
 
+# Valores do campo `company` no corpus para cada ticker detectado — bancos
+# brasileiros têm docs tanto da SEC (ADR) quanto da CVM (ticker B3).
+CORPUS_COMPANY_KEYS: dict[str, set[str]] = {
+    "ITUB": {"ITUB", "ITUB4"},
+    "BBD": {"BBD", "BBDC4"},
+    "BSBR": {"BSBR", "SANB11"},
+    "BBAS": {"BBAS3"},
+    "NU": {"NU"},
+}
+
+# Fontes entity-neutras: nunca penalizadas pelo entity boost (o IF.data do
+# BACEN responde perguntas sobre qualquer banco).
+NEUTRAL_COMPANIES: set[str] = {"BACEN"}
+
+
+def corpus_companies(tickers: list[str]) -> set[str]:
+    """Expande tickers detectados para os valores de `company` no corpus."""
+    keys: set[str] = set()
+    for ticker in tickers:
+        keys.update(CORPUS_COMPANY_KEYS.get(ticker, {ticker}))
+    return keys
+
 
 def _compile() -> list[tuple[str, re.Pattern]]:
     patterns: list[tuple[str, re.Pattern]] = []

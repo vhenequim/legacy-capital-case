@@ -2,7 +2,12 @@ from legacy_retrieval.config import Settings, get_settings
 from legacy_retrieval.generation.llm import GroundedGenerator
 from legacy_retrieval.indexing.indexer import DocumentIndexer
 from legacy_retrieval.models import QueryResponse, RetrievedChunk
-from legacy_retrieval.retrieval.decompose import build_subqueries
+from legacy_retrieval.retrieval.decompose import (
+    NEUTRAL_COMPANIES,
+    build_subqueries,
+    corpus_companies,
+    detect_companies,
+)
 from legacy_retrieval.retrieval.hybrid import HybridRetriever
 from legacy_retrieval.retrieval.reranker import CrossEncoderReranker
 
@@ -40,19 +45,36 @@ class RetrievalPipeline:
         self.generator = GroundedGenerator(self.settings)
 
     def _retrieve_reranked(self, question: str, top_n: int) -> list[RetrievedChunk]:
-        """Sistema completo: decomposição (se multi-entidade) + híbrido + rerank."""
+        """Sistema completo: decomposição (se multi-entidade) + híbrido + rerank + entity boost."""
         pool = self.settings.retrieval_top_k
         subqueries = build_subqueries(question)
 
         if len(subqueries) == 1:
-            candidates = self.retriever.retrieve(question, top_k=pool)
-            return self.reranker.rerank(question, candidates, top_n=top_n)
+            return self._retrieve_single(question, pool, top_n)
 
-        per_subquery = []
-        for subquery in subqueries:
-            candidates = self.retriever.retrieve(subquery, top_k=pool)
-            per_subquery.append(self.reranker.rerank(subquery, candidates, top_n=top_n))
+        per_subquery = [self._retrieve_single(sq, pool, top_n) for sq in subqueries]
         return _interleave(per_subquery, top_n)
+
+    def _retrieve_single(self, query: str, pool: int, top_n: int) -> list[RetrievedChunk]:
+        companies = (
+            corpus_companies(detect_companies(query)) if self.settings.entity_boost else set()
+        )
+        candidates = self.retriever.retrieve(query, top_k=pool, companies=companies or None)
+        reranked = self.reranker.rerank(query, candidates, top_n=pool)
+
+        if companies:
+            # Chunks de OUTRA empresa conhecida caem no ranking; fontes
+            # neutras (BACEN) e a própria empresa ficam intactas. O score
+            # original é preservado (o gate de recusa lê o logit real).
+            penalty = self.settings.entity_mismatch_penalty
+            allowed = companies | NEUTRAL_COMPANIES
+
+            def adjusted(r: RetrievedChunk) -> float:
+                return r.score - (0.0 if r.chunk.company in allowed else penalty)
+
+            reranked.sort(key=adjusted, reverse=True)
+
+        return reranked[:top_n]
 
     def query(self, question: str, top_k: int | None = None) -> QueryResponse:
         reranked = self._retrieve_reranked(question, top_k or self.settings.rerank_top_k)

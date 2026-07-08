@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     # Logit do cross-encoder abaixo do qual a resposta é recusada.
     # Calibrado no mmarco-mMiniLMv2: relevantes > 0, irrelevantes < -4.
     rerank_refusal_threshold: float = -2.0
+    # Entity boost: penalidade no logit pós-rerank para chunks de OUTRA
+    # empresa conhecida quando a pergunta menciona empresas específicas.
+    # Fontes neutras (BACEN) nunca são penalizadas.
+    entity_boost: bool = True
+    entity_mismatch_penalty: float = 2.0
 
     sec_user_agent: str = "LegacyCapitalResearch contact@example.com"
 
