@@ -197,3 +197,46 @@ def test_metrics_with_alternative_groups():
     assert recall_at_k(["doc_10q", "x", "doc_unico"], expected, k=3) == 1.0
     assert recall_at_k(["doc_10q", "x", "y"], expected, k=3) == 0.5
     assert mrr(["x", "doc_8k"], expected) == pytest.approx(0.5)
+
+
+def test_detect_companies_multi_entity():
+    from legacy_retrieval.retrieval.decompose import build_subqueries, detect_companies
+
+    q = "How much did Amazon and Meta each report in capital expenditures for 2025?"
+    assert detect_companies(q) == ["AMZN", "META"]
+    subs = build_subqueries(q)
+    assert len(subs) == 2
+    assert "Meta" not in subs[0] and "Amazon" in subs[0]
+    assert "Amazon" not in subs[1] and "Meta" in subs[1]
+
+
+def test_detect_companies_ambiguous_alias_pt():
+    from legacy_retrieval.retrieval.decompose import build_subqueries, detect_companies
+
+    # "meta" minúsculo é palavra comum em PT — não pode virar a empresa Meta
+    q = "Qual a meta de crescimento da carteira que o Bradesco anunciou?"
+    assert detect_companies(q) == ["BBD"]
+    assert build_subqueries(q) == [q]
+
+
+def test_single_company_not_decomposed():
+    from legacy_retrieval.retrieval.decompose import build_subqueries
+
+    q = "What did NVIDIA say about Blackwell demand?"
+    assert build_subqueries(q) == [q]
+
+
+def test_interleave_round_robin_dedupes():
+    from legacy_retrieval.models import Chunk, RetrievedChunk
+    from legacy_retrieval.pipeline import _interleave
+
+    def rc(cid, doc):
+        return RetrievedChunk(
+            chunk=Chunk(id=cid, document_id=doc, text="x", chunk_index=0), score=1.0
+        )
+
+    a = [rc("a1", "docA"), rc("shared", "docS"), rc("a3", "docA")]
+    b = [rc("b1", "docB"), rc("shared", "docS"), rc("b3", "docB")]
+    merged = _interleave([a, b], limit=10)
+    ids = [r.chunk.id for r in merged]
+    assert ids == ["a1", "b1", "shared", "a3", "b3"]
