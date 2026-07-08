@@ -1,0 +1,347 @@
+{
+  "k": 10,
+  "retrieval_only": true,
+  "mean_recall_at_k": 0.9444,
+  "mean_precision_at_k": 0.1583,
+  "mean_mrr": 0.7478,
+  "answer_rate": null,
+  "refusal_rate": null,
+  "per_question": [
+    {
+      "id": "q01",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q02",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 0.5,
+      "refusal_correct": true
+    },
+    {
+      "id": "q03",
+      "category": "multi_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q04",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q05",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q06",
+      "category": "multi_period",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.4,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q07",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q90",
+      "category": "unanswerable",
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "refusal_correct": false
+    },
+    {
+      "id": "q91",
+      "category": "unanswerable",
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "refusal_correct": false
+    },
+    {
+      "id": "q08",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 0.5,
+      "refusal_correct": true
+    },
+    {
+      "id": "q09",
+      "category": "multi_period",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q10",
+      "category": "structured",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q11",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q12",
+      "category": "multi_period",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.3,
+      "mrr": 0.5,
+      "refusal_correct": true
+    },
+    {
+      "id": "q13",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 0.3333,
+      "refusal_correct": true
+    },
+    {
+      "id": "q14",
+      "category": "multi_period",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q15",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 0.1111,
+      "refusal_correct": true
+    },
+    {
+      "id": "q16",
+      "category": "multi_period",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.5,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q17",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q18",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q19",
+      "category": "multi_period",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.4,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q20",
+      "category": "multi_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.2,
+      "refusal_correct": true
+    },
+    {
+      "id": "q21",
+      "category": "multi_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.1111,
+      "refusal_correct": true
+    },
+    {
+      "id": "q22",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 0.5,
+      "refusal_correct": true
+    },
+    {
+      "id": "q23",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 0.3333,
+      "refusal_correct": true
+    },
+    {
+      "id": "q24",
+      "category": "multi_period",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.4,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q25",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q26",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q27",
+      "category": "multi_period",
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q28",
+      "category": "single_document",
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q29",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q30",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 0.5,
+      "refusal_correct": true
+    },
+    {
+      "id": "q31",
+      "category": "multi_period",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q32",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 0.3333,
+      "refusal_correct": true
+    },
+    {
+      "id": "q33",
+      "category": "single_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q34",
+      "category": "multi_document",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q35",
+      "category": "structured",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q36",
+      "category": "structured",
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.1,
+      "mrr": 1.0,
+      "refusal_correct": true
+    },
+    {
+      "id": "q92",
+      "category": "unanswerable",
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "refusal_correct": false
+    },
+    {
+      "id": "q93",
+      "category": "unanswerable",
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "refusal_correct": false
+    },
+    {
+      "id": "q94",
+      "category": "unanswerable",
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "refusal_correct": false
+    },
+    {
+      "id": "q95",
+      "category": "unanswerable",
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "refusal_correct": false
+    }
+  ]
+}

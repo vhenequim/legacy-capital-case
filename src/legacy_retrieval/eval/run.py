@@ -40,6 +40,11 @@ def main(
         help="Directory with processed documents",
     ),
     output: Path = typer.Option(None, "--output", "-o", help="Write JSON report to file"),
+    retrieval_only: bool = typer.Option(
+        False,
+        "--retrieval-only",
+        help="Pula a geração (LLM): mede só recall/precision/MRR — grátis e determinístico",
+    ),
 ) -> None:
     settings = get_settings()
     proc = processed_dir or settings.processed_data_dir
@@ -62,9 +67,10 @@ def main(
         raise typer.Exit(1)
 
     qs = load_questions(questions)
-    console.print(f"Running eval on {len(qs)} questions (k={k})...")
+    mode = " [retrieval-only]" if retrieval_only else ""
+    console.print(f"Running eval on {len(qs)} questions (k={k}){mode}...")
 
-    report = harness.run(qs, k=k)
+    report = harness.run(qs, k=k, retrieval_only=retrieval_only)
     summary = report.to_dict()
 
     table = Table(title="Eval Results")
@@ -73,8 +79,9 @@ def main(
     table.add_row("Mean Recall@k", f"{summary['mean_recall_at_k']:.4f}")
     table.add_row("Mean Precision@k", f"{summary['mean_precision_at_k']:.4f}")
     table.add_row("Mean MRR", f"{summary['mean_mrr']:.4f}")
-    table.add_row("Answer Rate", f"{summary['answer_rate']:.4f}")
-    table.add_row("Refusal Rate", f"{summary['refusal_rate']:.4f}")
+    for label, key in (("Answer Rate", "answer_rate"), ("Refusal Rate", "refusal_rate")):
+        value = summary[key]
+        table.add_row(label, "n/a (retrieval-only)" if value is None else f"{value:.4f}")
     console.print(table)
 
     if output:

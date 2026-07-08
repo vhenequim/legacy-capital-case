@@ -53,7 +53,7 @@ def smoke_pipeline():
 
 def test_smoke_retrieval_metrics(smoke_pipeline):
     questions = load_questions(FIXTURES / "questions_smoke.jsonl")
-    report = EvalHarness(smoke_pipeline).run(questions, k=5)
+    report = EvalHarness(smoke_pipeline).run(questions, k=5, retrieval_only=True)
 
     per_q = {
         r.question_id: (r.recall_at_k, r.mrr) for r in report.results if r.expected_doc_ids

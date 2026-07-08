@@ -69,7 +69,8 @@ python scripts/ingest_cases.py --case all --since 2024-01-01 --max 25
 python scripts/index.py --fresh
 
 # 3. Eval harness
-python -m legacy_retrieval.eval.run --k 10 --output eval/results.json
+python -m legacy_retrieval.eval.run --k 10 --retrieval-only   # só retrieval: grátis e determinístico
+python -m legacy_retrieval.eval.run --k 10 --output eval/results.json   # completo (usa o LLM)
 
 # 4. Consulta ad-hoc
 python scripts/query.py "What was NVIDIA's Data Center revenue last quarter?"
@@ -90,28 +91,31 @@ Os Cases A e B são resolvidos **apenas com perguntas à plataforma genérica** 
 
 ## Eval Harness (eval-driven development)
 
-Gold set: [`eval/questions.jsonl`](eval/questions.jsonl) — 14 perguntas **verificadas manualmente contra documentos reais**, cobrindo: documento único, multi-documento, multi-período, dado estruturado e 2 não-respondíveis.
+Gold set: [`eval/questions.jsonl`](eval/questions.jsonl) — **42 perguntas verificadas manualmente contra documentos reais** (fatos minerados do corpus: RPO extraído dos filings, guidance da CVM, IF.data), cobrindo: documento único, multi-documento, multi-período, dado estruturado e 6 não-respondíveis, em inglês e português.
+
+O histórico completo de como cada melhoria nasceu de um diagnóstico do eval — incluindo por que expandimos o gold set de 14 para 42 e por que o recall *cair* foi o resultado desejado — está em [`docs/PROCESSO_ITERATIVO.md`](docs/PROCESSO_ITERATIVO.md).
 
 Métricas: Recall@10, Precision@10, MRR (nível de documento), taxa de resposta correta e taxa de recusa correta.
 
 ### Resultados (base real: 822 documentos, 63.562 chunks)
 
-| Métrica | Baseline¹ | Final² |
-|---------|-----------|--------|
-| Recall@10 (documento) | 0.57 | **1.00** |
-| MRR | 0.52 | **0.875** |
-| Precision@10 | 0.11 | 0.17³ |
-| Taxa de resposta (LLM 70B) | 0.67 | **1.00** |
-| Taxa de recusa correta | 1.00 | **1.00** |
+| Métrica | Baseline¹ (14 perguntas) | Otimizado² (14 perguntas) | Final³ (42 perguntas) |
+|---------|--------------------------|---------------------------|------------------------|
+| Recall@10 (documento) | 0.57 | 1.00 | **0.94** |
+| MRR | 0.52 | 0.875 | **0.75** |
+| Precision@10 | 0.11 | 0.17⁴ | 0.16⁴ |
+| Taxa de resposta (LLM 70B) | 0.67 | **1.00** | —⁵ |
+| Taxa de recusa correta | 1.00 | **1.00** | —⁵ |
 
 ¹ Embeddings/reranker apenas em inglês (all-MiniLM + ms-marco), top-k 20, métricas pré-rerank.
-² Após diagnóstico pelo eval: embeddings `multilingual-e5-small`, reranker mmarco multilíngue, pool de candidatos 50, métricas no sistema completo (híbrido + rerank), rótulos com grupos de documentos alternativos (8-K e 10-Q do mesmo dia contêm o mesmo fato) e **query decomposition** para perguntas multi-empresa (a última falha de recall: capex de Amazon E Meta na mesma pergunta diluía o top-k; a decomposição detecta as empresas, gera uma sub-query por entidade e intercala os resultados).
-³ Precision@10 é estruturalmente baixa: cada pergunta tem 1-4 documentos relevantes e o corte é fixo em 10.
+² Após diagnóstico pelo eval: embeddings `multilingual-e5-small`, reranker mmarco multilíngue, pool de candidatos 50, métricas no sistema completo, grupos de documentos alternativos nos rótulos e **query decomposition** multi-empresa.
+³ Gold set expandido de 14 para 42 perguntas (fatos verificados no corpus). A queda de 1.00 para 0.94 é **o eval funcionando**: recall perfeito num conjunto pequeno indicava saturação, e as perguntas novas expuseram 2 falhas reais (RPO em notas contábeis de 10-Q; reranker prioriza tópico sobre entidade) — diagnóstico completo em [`docs/PROCESSO_ITERATIVO.md`](docs/PROCESSO_ITERATIVO.md).
+⁴ Precision@10 é estruturalmente baixa: cada pergunta tem 1-4 documentos relevantes e o corte é fixo em 10.
+⁵ Métricas de retrieval rodam em `--retrieval-only` (grátis, determinístico); taxas de resposta/recusa exigem o LLM e são medidas em marcos, respeitando a cota do free tier.
 
 Observações honestas:
 - A **taxa de resposta depende do LLM**: 100% com Llama 3.3 70B; 58% com Llama 3.1 8B (recusa em excesso). As métricas de retrieval independem do modelo de geração.
 - A recusa tem duas camadas: gate por score do reranker (barato) + recusa semântica do LLM grounded. Só o gate não basta — uma pergunta sobre a Apple (fora da base) atinge score 3.96 em trechos de "fiscal 2024 revenue" de outras empresas.
-- Recall@10 = 1.00 em 14 perguntas indica que o gold set ficou fácil para o sistema atual — o próximo passo é expandi-lo (40-50 perguntas), não celebrar o número.
 
 ### Eval no CI (gate de regressão)
 

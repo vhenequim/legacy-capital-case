@@ -49,9 +49,10 @@ O ciclo funcionou na prática:
 1. **Baseline** (modelos EN-only, top-k 20): Recall@10 0.57, MRR 0.52, respostas 67%
 2. **Diagnóstico via eval**: perguntas em português refusavam (reranker EN-only); fatos afogados em 10-Ks de 500KB (top-k pequeno); 1 rótulo gold errado (corrigido); métricas mediam o ranking pré-rerank, não o sistema real; perguntas multi-empresa diluíam o top-k
 3. **Melhorias**: embeddings + reranker multilíngues, pool de candidatos 50, métricas no sistema completo, threshold recalibrado, grupos de documentos alternativos nos rótulos, **query decomposition** (uma sub-query por empresa detectada, resultados intercalados)
-4. **Resultado final**: Recall@10 **1.00**, MRR **0.875**, respostas **100%** (70B), recusas corretas **100%**
+4. **Resultado**: Recall@10 **1.00**, MRR **0.875**, respostas **100%** (70B), recusas corretas **100%** — nas 14 perguntas originais
 5. **Gate de regressão**: o eval de retrieval roda no CI a cada push (corpus fixture versionado + Qdrant service container); o build falha se Recall@5 < 0.9
-6. **Bônus**: a taxa de resposta é sensível ao LLM (100% com 70B vs 58% com 8B, que recusa demais) — mas as métricas de retrieval não. Exatamente a tese do case: retrieval é o que importa.
+6. **Expansão do gold set (14 → 42)**: recall 1.00 indicava saturação, não perfeição. Perguntas novas verificadas contra o corpus derrubaram o recall para **0.94** e expuseram 2 falhas reais (RPO em notas de 10-Q; reranker prioriza tópico sobre entidade) — que viram as próximas melhorias. Processo completo em `docs/PROCESSO_ITERATIVO.md`.
+7. **Bônus**: a taxa de resposta é sensível ao LLM (100% com 70B vs 58% com 8B, que recusa demais) — mas as métricas de retrieval não. Exatamente a tese do case: retrieval é o que importa.
 
 > Sem o eval, cada uma dessas mudanças seria "achismo". Com ele, é medição.
 
