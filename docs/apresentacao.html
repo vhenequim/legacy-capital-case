@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Legacy Capital — AI Retrieval System · Apresentação</title>
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #14181d;
+    --panel2: #1b2027;
+    --card: #161b21;
+    --card-hover: #1c232b;
+    --border: #252c35;
+    --border-soft: #1f262e;
+    --text: #e7ecf2;
+    --dim: #9aa6b2;
+    --faint: #6b7681;
+    --accent: #5aa9ff;
+    --accent2: #7c5cff;
+    --green: #3ddc97;
+    --amber: #f6b53d;
+    --red: #ff6b6b;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+  }
+  /* ---------- deck frame ---------- */
+  .deck { max-width: 1040px; margin: 0 auto; padding: 0 20px 120px; }
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(180deg, var(--bg) 70%, transparent);
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 4px 12px;
+  }
+  .brand { font-weight: 700; letter-spacing: .2px; font-size: 14.5px; }
+  .brand .muted { color: var(--faint); font-weight: 500; }
+  .progress { flex: 1; height: 4px; background: var(--border-soft); border-radius: 999px; overflow: hidden; }
+  .progress > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .25s ease; }
+  .counter { font-family: var(--mono); font-size: 12px; color: var(--dim); min-width: 52px; text-align: right; }
+
+  .slide { display: none; animation: fade .3s ease; padding-top: 8px; }
+  .slide.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .kicker { display: inline-block; font-family: var(--mono); font-size: 11.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  h1 { font-size: 40px; line-height: 1.1; margin: 0 0 14px; letter-spacing: -0.5px; }
+  h2 { font-size: 28px; line-height: 1.15; margin: 0 0 18px; letter-spacing: -0.3px; }
+  h3 { font-size: 16px; margin: 0 0 8px; }
+  p { color: var(--dim); margin: 0 0 12px; }
+  b, strong { color: var(--text); }
+  a { color: var(--accent); }
+  .lead { font-size: 18px; color: var(--text); }
+
+  .chip { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: .2px; }
+  .chip.accent { color: var(--accent); background: rgba(90,169,255,.1); border: 1px solid rgba(90,169,255,.2); }
+  .chip.green { color: var(--green); background: rgba(61,220,151,.1); border: 1px solid rgba(61,220,151,.2); }
+  .chip.amber { color: var(--amber); background: rgba(246,181,61,.1); border: 1px solid rgba(246,181,61,.2); }
+  .chip.violet { color: var(--accent2); background: rgba(124,92,255,.1); border: 1px solid rgba(124,92,255,.2); }
+
+  code { font-family: var(--mono); font-size: .88em; background: #0e1216; border: 1px solid var(--border-soft); border-radius: 5px; padding: 1px 6px; color: #c8d3df; }
+  pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.6; background: #0e1216; border: 1px solid var(--border-soft); border-radius: 8px; padding: 14px 16px; overflow-x: auto; color: #c8d3df; margin: 12px 0; }
+
+  .grid { display: grid; gap: 14px; }
+  .grid.c2 { grid-template-columns: 1fr 1fr; }
+  .grid.c3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 760px) { .grid.c2, .grid.c3 { grid-template-columns: 1fr; } h1 { font-size: 30px; } h2 { font-size: 23px; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .card h3 { display: flex; align-items: center; gap: 8px; }
+  .card p { margin: 0; font-size: 14px; }
+  .card .num { font-family: var(--mono); font-size: 30px; font-weight: 700; color: var(--text); line-height: 1; }
+  .card .num.green { color: var(--green); }
+  .card .num.accent { color: var(--accent); }
+  .card .label { font-size: 12px; color: var(--faint); margin-top: 6px; letter-spacing: .3px; }
+
+  ul.clean { margin: 8px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; color: var(--dim); }
+  ul.clean li b { color: var(--text); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 6px 0; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { color: var(--faint); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px; }
+  td { color: var(--dim); }
+  td b { color: var(--text); }
+
+  /* architecture flow */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 4px; }
+  .node { background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; font-size: 13px; color: var(--text); }
+  .node.src { border-color: rgba(90,169,255,.35); }
+  .node.core { border-color: rgba(124,92,255,.4); }
+  .node.out { border-color: rgba(61,220,151,.4); }
+  .arrow { color: var(--faint); font-size: 18px; }
+
+  .callout { border-left: 3px solid var(--accent2); background: rgba(124,92,255,.06); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; color: var(--text); font-size: 15px; }
+
+  /* expandable detail */
+  details.exp { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0; margin: 10px 0; overflow: hidden; }
+  details.exp > summary { list-style: none; cursor: pointer; padding: 13px 16px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14.5px; }
+  details.exp > summary::-webkit-details-marker { display: none; }
+  details.exp > summary::after { content: "+"; margin-left: auto; color: var(--faint); font-family: var(--mono); font-size: 18px; }
+  details.exp[open] > summary::after { content: "−"; }
+  details.exp[open] > summary { border-bottom: 1px solid var(--border-soft); }
+  details.exp .body { padding: 14px 16px; }
+  details.exp .body p, details.exp .body ul { font-size: 13.5px; }
+
+  .step { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border-soft); }
+  .step:last-child { border-bottom: none; }
+  .step .n { flex: none; width: 28px; height: 28px; border-radius: 8px; background: var(--panel2); border: 1px solid var(--border); display: grid; place-items: center; font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 700; }
+  .step .txt { font-size: 14px; }
+  .step .txt b { color: var(--text); }
+
+  /* nav */
+  .nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: linear-gradient(0deg, var(--bg) 60%, transparent); padding: 16px 20px 20px; }
+  .nav-inner { max-width: 1040px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+  .btn { background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 9px; padding: 9px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: var(--sans); }
+  .btn:hover:not(:disabled) { background: var(--card-hover); border-color: var(--accent); }
+  .btn:disabled { opacity: .35; cursor: default; }
+  .dots { flex: 1; display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
+  .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--border); border: none; cursor: pointer; padding: 0; }
+  .dot.active { background: var(--accent); width: 22px; }
+  .hint { font-size: 11.5px; color: var(--faint); font-family: var(--mono); }
+  @media (max-width: 620px) { .hint { display: none; } }
+</style>
+</head>
+<body>
+<div class="deck">
+  <div class="topbar">
+    <div class="brand">Legacy Capital <span class="muted">· AI Retrieval System</span></div>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="counter" id="counter">01 / 11</div>
+  </div>
+
+  <!-- 1 · COVER -->
+  <section class="slide active">
+    <span class="kicker">Case de research · equities</span>
+    <h1>Uma base que <span style="color:var(--accent)">se conecta sozinha</span> e só responde com evidência.</h1>
+    <p class="lead">Plataforma de RAG sobre filings da SEC, CVM e BACEN — ingestão automática, busca híbrida e um eval harness que guiou cada decisão. Toda resposta cita documento e trecho; sem evidência, recusa.</p>
+    <div class="grid c3" style="margin-top:26px">
+      <div class="card"><div class="num accent">822</div><div class="label">documentos reais indexados</div></div>
+      <div class="card"><div class="num accent">63k</div><div class="label">chunks · BM25 + vetorial</div></div>
+      <div class="card"><div class="num green">0.95</div><div class="label">recall@10 · gold set 42 perguntas</div></div>
+    </div>
+    <p style="margin-top:24px; font-size:13px; color:var(--faint)">Use ← → para navegar · repositório em <code>github.com/vhenequim/legacy-capital-case</code></p>
+  </section>
+
+  <!-- 2 · PROBLEMA -->
+  <section class="slide">
+    <span class="kicker">01 · O problema</span>
+    <h2>O difícil não é ler um documento — é saber quais existem e conectá-los.</h2>
+    <p class="lead">Um analista responde perguntas que exigem reunir fragmentos espalhados por centenas de documentos, períodos e fontes distintas.</p>
+    <div class="grid c3" style="margin-top:20px">
+      <div class="card"><h3>Volume</h3><p>Centenas de filings, releases e séries — ninguém lê tudo a cada pergunta.</p></div>
+      <div class="card"><h3>Heterogeneidade</h3><p>Texto (10-K, press release) e dados estruturados (IF.data, preços) na mesma pergunta.</p></div>
+      <div class="card"><h3>Confiança</h3><p>Uma resposta sem fonte rastreável não serve para uma tese de investimento.</p></div>
+    </div>
+  </section>
+
+  <!-- 3 · SOLUÇÃO -->
+  <section class="slide">
+    <span class="kicker">02 · A solução</span>
+    <h2>Pesquisa estilo NotebookLM, com três diferenças fundamentais.</h2>
+    <div class="grid c3" style="margin-top:8px">
+      <div class="card">
+        <h3><span class="chip accent">1</span> Base conectada</h3>
+        <p>Ingestão automática de SEC, CVM, BACEN, notícias (RSS) e preços. Zero upload manual — nova empresa é uma linha de config.</p>
+      </div>
+      <div class="card">
+        <h3><span class="chip violet">2</span> Dados heterogêneos</h3>
+        <p>Texto e estruturados no mesmo retrieval. Um press release e uma tabela do IF.data competem lado a lado.</p>
+      </div>
+      <div class="card">
+        <h3><span class="chip green">3</span> Rastreabilidade total</h3>
+        <p>Toda resposta cita documento e trecho. Sem evidência: <i>"Não encontrei essa informação na base."</i></p>
+      </div>
+    </div>
+    <div class="callout"><b>Princípio central:</b> o LLM nunca responde com conhecimento próprio — apenas sintetiza as evidências recuperadas.</div>
+  </section>
+
+  <!-- 4 · ARQUITETURA -->
+  <section class="slide">
+    <span class="kicker">03 · Arquitetura</span>
+    <h2>Um pipeline agnóstico a fonte e a modelo.</h2>
+    <div class="flow">
+      <span class="node src">SEC · CVM · BACEN · RSS · Preços</span><span class="arrow">→</span>
+      <span class="node">Ingestão automática</span><span class="arrow">→</span>
+      <span class="node">Parsing PDF/HTML</span><span class="arrow">→</span>
+      <span class="node">Chunking + metadados</span>
+    </div>
+    <div class="flow">
+      <span class="node">BM25</span><span class="arrow">＋</span>
+      <span class="node">Embeddings multilíngues → Qdrant</span><span class="arrow">→</span>
+      <span class="node core">Fusão RRF</span><span class="arrow">→</span>
+      <span class="node core">Reranker cross-encoder</span><span class="arrow">→</span>
+      <span class="node core">LLM grounded (Groq)</span><span class="arrow">→</span>
+      <span class="node out">Resposta + citações ou recusa</span>
+    </div>
+    <div class="grid c2" style="margin-top:18px">
+      <div class="card"><h3>Trocável por design</h3><p>LLM, embeddings e reranker vêm do <code>.env</code>. Groq hoje; OpenAI ou Ollama sem mudar código.</p></div>
+      <div class="card"><h3>Extensível por design</h3><p>Nova fonte = um fetcher que retorna <code>Document</code>. O resto do pipeline não muda.</p></div>
+    </div>
+  </section>
+
+  <!-- 5 · DECISÕES -->
+  <section class="slide">
+    <span class="kicker">04 · Decisões técnicas</span>
+    <h2>Cada escolha tem um porquê — a maioria veio do eval.</h2>
+    <table>
+      <thead><tr><th>Decisão</th><th>Escolha</th><th>Justificativa</th></tr></thead>
+      <tbody>
+        <tr><td><b>Busca</b></td><td>BM25 + vetorial, fusão RRF</td><td>Termos exatos (capex, RPO) + semântica; RRF dispensa calibrar scores.</td></tr>
+        <tr><td><b>Embeddings</b></td><td>multilingual-e5-small</td><td>Base bilíngue (SEC EN + CVM PT); o eval provou que modelo EN-only falhava em PT.</td></tr>
+        <tr><td><b>Reranker</b></td><td>mmarco-mMiniLMv2</td><td>Top-50 → top-10; os logits calibram a recusa.</td></tr>
+        <tr><td><b>Recusa</b></td><td>threshold no logit (−2.0)</td><td>Empírico: relevantes &gt; 0, irrelevantes &lt; −4.</td></tr>
+        <tr><td><b>LLM</b></td><td>Groq · Llama 3.3 70B (free)</td><td>Boa síntese, custo zero, trocável.</td></tr>
+        <tr><td><b>Chunks</b></td><td>~1800 chars, overlap 200</td><td>Preserva contexto de tabelas; 822 docs → 63k chunks.</td></tr>
+      </tbody>
+    </table>
+    <details class="exp">
+      <summary>Como tratei tamanhos e tipos diferentes de documento</summary>
+      <div class="body">
+        <ul class="clean">
+          <li><b>Texto longo (10-K/10-Q):</b> chunking por caracteres com overlap, preservando tabelas financeiras inteiras dentro de um chunk sempre que possível.</li>
+          <li><b>Press releases (exhibits de 8-K):</b> extraídos dos anexos, não do documento principal — os nomes dos exhibits são arbitrários.</li>
+          <li><b>Estruturados (IF.data, preços):</b> serializados em texto com rótulos ("market share do Nubank = 2,03%") para entrarem no mesmo índice do texto livre.</li>
+          <li><b>Metadados:</b> empresa, fonte, período e tipo em cada chunk — base para o entity boost e para futuros filtros temporais.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- 6 · EVAL-DRIVEN -->
+  <section class="slide">
+    <span class="kicker">05 · Eval-driven development</span>
+    <h2>Construí o eval <span style="color:var(--accent)">antes</span> de otimizar o retrieval.</h2>
+    <p>14 perguntas verificadas à mão contra documentos reais — single-doc, multi-doc, multi-período, estruturada e não-respondível. Depois o ciclo baseline → diagnóstico → medição.</p>
+    <div class="grid c3" style="margin:16px 0">
+      <div class="card">
+        <div class="label" style="margin:0 0 8px">BASELINE · 14q · EN-only</div>
+        <div class="num">0.57</div><div class="label">recall@10 · MRR 0.52 · resp. 67%</div>
+      </div>
+      <div class="card" style="border-color:rgba(90,169,255,.3)">
+        <div class="label" style="margin:0 0 8px">MULTILÍNGUE + DECOMPOSIÇÃO · 14q</div>
+        <div class="num accent">1.00</div><div class="label">recall@10 · MRR 0.875 · resp. 100%</div>
+      </div>
+      <div class="card" style="border-color:rgba(61,220,151,.3)">
+        <div class="label" style="margin:0 0 8px">GOLD SET EXPANDIDO · 42q · atual</div>
+        <div class="num green">0.95</div><div class="label">recall@10 · MRR 0.74 · recusas 100%</div>
+      </div>
+    </div>
+    <details class="exp">
+      <summary>O que o eval diagnosticou (e como cada achado virou uma melhoria)</summary>
+      <div class="body">
+        <div class="step"><div class="n">1</div><div class="txt"><b>Perguntas em PT recusavam</b> → reranker EN-only. Trocado por modelos multilíngues.</div></div>
+        <div class="step"><div class="n">2</div><div class="txt"><b>Fatos afogados</b> em 10-Ks de 500KB → pool de candidatos ampliado para 50.</div></div>
+        <div class="step"><div class="n">3</div><div class="txt"><b>Métricas mediam o ranking pré-rerank</b>, não o sistema real → passaram a medir o pipeline completo.</div></div>
+        <div class="step"><div class="n">4</div><div class="txt"><b>Perguntas multi-empresa diluíam o top-k</b> → query decomposition (uma sub-query por empresa, resultados intercalados).</div></div>
+        <div class="step"><div class="n">5</div><div class="txt"><b>Reranker priorizava tópico sobre entidade</b> (RPO em nota de 10-Q de outra empresa) → entity boost: rankings restritos por empresa na fusão RRF + penalidade de entidade.</div></div>
+        <div class="step"><div class="n">6</div><div class="txt"><b>1 rótulo gold errado</b> → corrigido; grupos de documentos alternativos adicionados aos rótulos.</div></div>
+      </div>
+    </details>
+    <details class="exp">
+      <summary>Por que recall 1.00 não era motivo de comemoração</summary>
+      <div class="body">
+        <p>Recall 1.00 nas 14 perguntas indicava <b>saturação do teste</b>, não perfeição do sistema. Expandi o gold set para 42 perguntas verificadas — o recall caiu para 0.94–0.95 e expôs falhas reais, que viraram o backlog. O eval de retrieval roda no <b>CI a cada push</b> (corpus fixture versionado + Qdrant service container): o build falha se recall@5 &lt; 0.9.</p>
+      </div>
+    </details>
+    <div class="callout">Sem o eval, cada uma dessas mudanças seria achismo. Com ele, é medição.</div>
+  </section>
+
+  <!-- 7 · APRENDIZADOS -->
+  <section class="slide">
+    <span class="kicker">06 · Aprendizados sobre RAG</span>
+    <h2>O que o processo revelou.</h2>
+    <div class="grid c2">
+      <div class="card"><h3><span class="chip red">⚠</span> Retrieval quebra em silêncio</h3><p>O LLM produz texto plausível mesmo com contexto errado. Só o eval detecta.</p></div>
+      <div class="card"><h3><span class="chip amber">↯</span> A dificuldade real é a ingestão</h3><p>Press release nos exhibits do 8-K; guidance em faixa contamina extração; encoding latin-1 na CVM.</p></div>
+      <div class="card"><h3><span class="chip red">✗</span> Dados de referência mentem</h3><p>O código inicial tinha o CIK da CoreWeave apontando para outra empresa e o código CVM do Itaú apontando para o Banco do Brasil. Validar contra a fonte é obrigatório.</p></div>
+      <div class="card"><h3><span class="chip accent">文</span> Bilinguismo importa</h3><p>Modelos de embedding/rerank EN-only degradam silenciosamente em bases mistas EN/PT.</p></div>
+    </div>
+  </section>
+
+  <!-- 8 · CASES -->
+  <section class="slide">
+    <span class="kicker">07 · Resolução dos cases</span>
+    <h2>Os três cases — sem lógica hardcoded, via a plataforma genérica.</h2>
+    <details class="exp" open>
+      <summary><span class="chip accent">A</span> Capex dos hyperscalers vs NVIDIA</summary>
+      <div class="body"><p>Capex 2025 reportado por MSFT/AMZN/META/GOOGL com citações, receita de Data Center da NVIDIA (US$ 75,2 bi no 1T FY27, <b>+92% YoY</b>) e o comentário oficial sobre demanda de Blackwell — cada número com documento e trecho.</p></div>
+    </details>
+    <details class="exp">
+      <summary><span class="chip violet">B</span> Bancos brasileiros — promessa vs entrega</summary>
+      <div class="body">
+        <ul class="clean">
+          <li><b>Guidance vs revisão:</b> Bradesco fev/2025 (carteira 4–8%, margem R$37–41 bi) vs revisão jul/2025.</li>
+          <li><b>Sentimento:</b> comparação trimestre a trimestre via retrieval multi-período.</li>
+          <li><b>Market share (IF.data, base 2026-03):</b> Nubank 2,03% · Itaú 11,6% · Bradesco 10,0% do sistema (R$ 7,26 tri).</li>
+        </ul>
+      </div>
+    </details>
+    <details class="exp">
+      <summary><span class="chip green">C</span> Backtest de aceleração de RPO vs retorno pós-earnings</summary>
+      <div class="body"><p>43 eventos de 7 empresas; RPO extraído dos press releases reais; timing via <code>acceptanceDateTime</code> oficial da SEC → retorno do 1º pregão. <b>Achado:</b> aceleração positiva → 67% de pregões positivos (média +0,75%); desaceleração → 27% (média −0,19%). Correlação agregada fraca — amostra pequena, reportado honestamente.</p></div>
+    </details>
+  </section>
+
+  <!-- 9 · ESCALA + LIMITAÇÕES -->
+  <section class="slide">
+    <span class="kicker">08 · Escala &amp; honestidade</span>
+    <h2>O que escala — e o que eu faria diferente.</h2>
+    <div class="grid c2">
+      <div class="card">
+        <h3 style="color:var(--green)">Escala bem</h3>
+        <ul class="clean">
+          <li>Nova empresa = ticker na config; nova fonte = um fetcher.</li>
+          <li>Qdrant escala horizontalmente; embeddings em GPU (~370 chunks/s numa RTX 3050).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--amber)">Limitações conhecidas</h3>
+        <ul class="clean">
+          <li>BM25 em memória → migrar para Tantivy/ES acima de ~100k chunks.</li>
+          <li>RPO estruturado cobre 7/15 empresas; sem filtro temporal explícito; backtest sem significância estatística.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout"><b>O que faria em escala:</b> índice léxico dedicado, filtros de metadados no retrieval, LLM-as-judge no eval e transcrições de earnings calls como nova fonte.</div>
+  </section>
+
+  <!-- 10 · DEMO -->
+  <section class="slide">
+    <span class="kicker">09 · Demo ao vivo</span>
+    <h2>Reproduzível em quatro comandos.</h2>
+    <pre>docker compose up -d qdrant
+python scripts/query.py "Qual é o market share do Nubank segundo o BACEN?"
+python scripts/query.py "What did NVIDIA say about Blackwell demand?"
+python -m legacy_retrieval.eval.run --k 10</pre>
+    <div class="grid c2" style="margin-top:12px">
+      <div class="card"><h3>Ingestão</h3><p><code>scripts/ingest.py</code> — abastece a base a partir das fontes, de forma reproduzível.</p></div>
+      <div class="card"><h3>Eval</h3><p><code>legacy_retrieval.eval.run</code> — 42 perguntas, métricas de recall/precisão/MRR; <code>--retrieval-only</code> roda sem LLM.</p></div>
+    </div>
+  </section>
+
+  <!-- 11 · FECHAMENTO -->
+  <section class="slide">
+    <span class="kicker">10 · Fechamento</span>
+    <h2>A tese do case, em uma frase.</h2>
+    <p class="lead">A taxa de resposta é sensível ao LLM (100% com 70B vs 58% com 8B), mas as métricas de <b>retrieval</b> não. Retrieval é o que importa — e sem eval não dá para saber se ele funciona.</p>
+    <div class="grid c3" style="margin-top:24px">
+      <div class="card"><div class="num green">0.95</div><div class="label">recall@10 · 42 perguntas</div></div>
+      <div class="card"><div class="num green">100%</div><div class="label">recusas corretas</div></div>
+      <div class="card"><div class="num accent">3/3</div><div class="label">cases resolvidos</div></div>
+    </div>
+    <p style="margin-top:26px">Repositório · <code>github.com/vhenequim/legacy-capital-case</code></p>
+  </section>
+
+</div>
+
+<div class="nav">
+  <div class="nav-inner">
+    <button class="btn" id="prev">← Anterior</button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next">Próximo →</button>
+    <span class="hint">← →</span>
+  </div>
+</div>
+
+<script>
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var i = 0;
+  var bar = document.getElementById('bar');
+  var counter = document.getElementById('counter');
+  var dotsWrap = document.getElementById('dots');
+  var prev = document.getElementById('prev');
+  var next = document.getElementById('next');
+
+  slides.forEach(function (_, idx) {
+    var d = document.createElement('button');
+    d.className = 'dot' + (idx === 0 ? ' active' : '');
+    d.addEventListener('click', function () { go(idx); });
+    dotsWrap.appendChild(d);
+  });
+  var dots = Array.prototype.slice.call(dotsWrap.children);
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  function go(n) {
+    i = Math.max(0, Math.min(total - 1, n));
+    slides.forEach(function (s, idx) { s.classList.toggle('active', idx === i); });
+    dots.forEach(function (d, idx) { d.classList.toggle('active', idx === i); });
+    bar.style.width = ((i + 1) / total * 100) + '%';
+    counter.textContent = pad(i + 1) + ' / ' + pad(total);
+    prev.disabled = i === 0;
+    next.disabled = i === total - 1;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  prev.addEventListener('click', function () { go(i - 1); });
+  next.addEventListener('click', function () { go(i + 1); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { go(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { go(i - 1); }
+    else if (e.key === 'Home') { go(0); }
+    else if (e.key === 'End') { go(total - 1); }
+  });
+
+  go(0);
+</script>
+</body>
+</html>

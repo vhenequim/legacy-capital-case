@@ -2,6 +2,14 @@
 
 Plataforma de pesquisa documental para analistas de equities, no estilo NotebookLM, com **ingestão automática de fontes oficiais** e **respostas grounded com citações**. O retrieval é o coração do sistema: toda resposta vem exclusivamente da base indexada — sem evidência, o sistema recusa responder.
 
+## Apresentação
+
+A peça final do case está em dois formatos:
+
+- **[`docs/apresentacao.html`](docs/apresentacao.html)** — deck interativo (tema dark, navegável por teclado). Abre em qualquer navegador com duplo-clique, sem build.
+- **[`docs/apresentacao_legacy_case.pptx`](docs/apresentacao_legacy_case.pptx)** — versão em slides (PowerPoint).
+- **[`docs/APRESENTACAO.md`](docs/APRESENTACAO.md)** — o mesmo conteúdo em Markdown.
+
 ## Arquitetura
 
 ```

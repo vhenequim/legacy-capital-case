@@ -35,3 +35,6 @@ Thumbs.db
 
 # Guia de estudo pessoal (nao faz parte do deliverable)
 GuiaEstudo_LegacyRetrieval.jsx
+
+# Config de tooling local do Claude Code
+.claude/
