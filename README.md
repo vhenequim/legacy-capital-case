@@ -10,6 +10,7 @@ Fontes oficiais (SEC EDGAR, CVM, BACEN, RSS, Yahoo Finance)
     → Parsing (PDF via pdfplumber, HTML via BeautifulSoup)
     → Chunking (~1800 chars, overlap 200, metadados de empresa/tipo/data)
     → Indexação dupla: BM25 (léxico) + embeddings multilíngues (Qdrant)
+    → Query decomposition (perguntas multi-empresa → sub-queries focadas)
     → Busca híbrida com fusão RRF
     → Reranking cross-encoder multilíngue
     → Geração grounded (Groq/Llama 3.3 70B) com citações [Evidence N]
@@ -97,22 +98,26 @@ Métricas: Recall@10, Precision@10, MRR (nível de documento), taxa de resposta 
 
 | Métrica | Baseline¹ | Final² |
 |---------|-----------|--------|
-| Recall@10 (documento) | 0.57 | **0.96** |
-| MRR | 0.52 | **0.82** |
-| Precision@10 | 0.11 | 0.16³ |
-| Taxa de resposta (LLM 70B) | 0.67 | **0.92** |
+| Recall@10 (documento) | 0.57 | **1.00** |
+| MRR | 0.52 | **0.875** |
+| Precision@10 | 0.11 | 0.17³ |
+| Taxa de resposta (LLM 70B) | 0.67 | **1.00** |
 | Taxa de recusa correta | 1.00 | **1.00** |
 
 ¹ Embeddings/reranker apenas em inglês (all-MiniLM + ms-marco), top-k 20, métricas pré-rerank.
-² Após diagnóstico pelo eval: embeddings `multilingual-e5-small`, reranker mmarco multilíngue, pool de candidatos 50, métricas no sistema completo (híbrido + rerank), rótulos com grupos de documentos alternativos (8-K e 10-Q do mesmo dia contêm o mesmo fato).
+² Após diagnóstico pelo eval: embeddings `multilingual-e5-small`, reranker mmarco multilíngue, pool de candidatos 50, métricas no sistema completo (híbrido + rerank), rótulos com grupos de documentos alternativos (8-K e 10-Q do mesmo dia contêm o mesmo fato) e **query decomposition** para perguntas multi-empresa (a última falha de recall: capex de Amazon E Meta na mesma pergunta diluía o top-k; a decomposição detecta as empresas, gera uma sub-query por entidade e intercala os resultados).
 ³ Precision@10 é estruturalmente baixa: cada pergunta tem 1-4 documentos relevantes e o corte é fixo em 10.
 
 Observações honestas:
-- A única falha de recall restante é a q03 (capex anual de duas empresas na mesma pergunta — os 10-K gigantes competem com dezenas de relatórios trimestrais). Query decomposition resolveria; ficou como melhoria futura.
-- A **taxa de resposta depende do LLM**: 92% com Llama 3.3 70B; 58% com Llama 3.1 8B (recusa em excesso). As métricas de retrieval independem do modelo de geração.
+- A **taxa de resposta depende do LLM**: 100% com Llama 3.3 70B; 58% com Llama 3.1 8B (recusa em excesso). As métricas de retrieval independem do modelo de geração.
 - A recusa tem duas camadas: gate por score do reranker (barato) + recusa semântica do LLM grounded. Só o gate não basta — uma pergunta sobre a Apple (fora da base) atinge score 3.96 em trechos de "fiscal 2024 revenue" de outras empresas.
+- Recall@10 = 1.00 em 14 perguntas indica que o gold set ficou fácil para o sistema atual — o próximo passo é expandi-lo (40-50 perguntas), não celebrar o número.
 
-O ciclo baseline → diagnóstico → melhoria é reproduzível: cada mudança de retrieval foi validada pelo harness antes de entrar.
+### Eval no CI (gate de regressão)
+
+O retrieval não depende de LLM nem de API — então ele roda no GitHub Actions a cada push: um corpus fixture versionado ([`eval/fixtures/`](eval/fixtures), 12 documentos reais truncados) é indexado num Qdrant service container e o build **falha se Recall@5 < 0.9 ou MRR < 0.7** ([tests/test_eval_smoke.py](tests/test_eval_smoke.py)). Um teste dedicado protege a query decomposition (cobertura de AMZN e META no top-5 da pergunta multi-entidade). Fixtures regeneráveis via `python scripts/build_eval_fixtures.py`.
+
+O ciclo baseline → diagnóstico → melhoria é reproduzível: cada mudança de retrieval foi validada pelo harness antes de entrar — e agora é vigiada pelo CI.
 
 ## Resultados dos cases
 
@@ -136,7 +141,9 @@ O ciclo baseline → diagnóstico → melhoria é reproduzível: cada mudança d
 ## Melhorias futuras
 
 - Parser de tabelas (Docling) para RPO/capex em 10-Q
-- Filtros de metadados no retrieval (empresa, período) + query rewriting
+- Filtros de metadados no retrieval (empresa, período extraídos da pergunta)
+- Gold set maior (40-50 perguntas) com métricas por categoria
+- Eval de resposta com LLM-as-judge (hoje medimos retrieval + recusa, não a síntese)
 - Agendamento de ingestão (cron) para base viva
 - Interface web estilo NotebookLM
 

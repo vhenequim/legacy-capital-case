@@ -47,10 +47,11 @@ Construímos o harness **antes** de otimizar retrieval: 14 perguntas verificadas
 O ciclo funcionou na prática:
 
 1. **Baseline** (modelos EN-only, top-k 20): Recall@10 0.57, MRR 0.52, respostas 67%
-2. **Diagnóstico via eval**: perguntas em português refusavam (reranker EN-only); fatos afogados em 10-Ks de 500KB (top-k pequeno); 1 rótulo gold errado (corrigido); métricas mediam o ranking pré-rerank, não o sistema real
-3. **Melhorias**: embeddings + reranker multilíngues, pool de candidatos 50, métricas no sistema completo, threshold recalibrado, grupos de documentos alternativos nos rótulos
-4. **Resultado final**: Recall@10 **0.96**, MRR **0.82**, respostas **92%** (70B), recusas corretas **100%**
-5. **Bônus**: a taxa de resposta é sensível ao LLM (92% com 70B vs 58% com 8B, que recusa demais) — mas as métricas de retrieval não. Exatamente a tese do case: retrieval é o que importa.
+2. **Diagnóstico via eval**: perguntas em português refusavam (reranker EN-only); fatos afogados em 10-Ks de 500KB (top-k pequeno); 1 rótulo gold errado (corrigido); métricas mediam o ranking pré-rerank, não o sistema real; perguntas multi-empresa diluíam o top-k
+3. **Melhorias**: embeddings + reranker multilíngues, pool de candidatos 50, métricas no sistema completo, threshold recalibrado, grupos de documentos alternativos nos rótulos, **query decomposition** (uma sub-query por empresa detectada, resultados intercalados)
+4. **Resultado final**: Recall@10 **1.00**, MRR **0.875**, respostas **100%** (70B), recusas corretas **100%**
+5. **Gate de regressão**: o eval de retrieval roda no CI a cada push (corpus fixture versionado + Qdrant service container); o build falha se Recall@5 < 0.9
+6. **Bônus**: a taxa de resposta é sensível ao LLM (100% com 70B vs 58% com 8B, que recusa demais) — mas as métricas de retrieval não. Exatamente a tese do case: retrieval é o que importa.
 
 > Sem o eval, cada uma dessas mudanças seria "achismo". Com ele, é medição.
 

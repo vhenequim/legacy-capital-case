@@ -8,12 +8,26 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      qdrant:
+        image: qdrant/qdrant:v1.12.5
+        ports:
+          - 6333:6333
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+
+      - name: Cache HuggingFace models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-models-e5small-mmarco-v1
 
       - name: Install dependencies
         run: |
@@ -22,5 +36,11 @@ jobs:
       - name: Lint
         run: ruff check src tests scripts
 
-      - name: Test
+      # Inclui o smoke eval de retrieval (tests/test_eval_smoke.py):
+      # indexa o corpus fixture versionado no Qdrant do service container
+      # e falha o build se Recall@5 < 0.9 ou MRR < 0.7.
+      - name: Test + smoke eval
         run: pytest tests/ -v
+        env:
+          QDRANT_HOST: localhost
+          QDRANT_PORT: "6333"

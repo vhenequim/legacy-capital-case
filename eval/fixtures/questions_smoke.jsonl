@@ -1,0 +1,6 @@
+{"id": "s01", "question": "What was NVIDIA's Data Center revenue in the first quarter of fiscal year 2027?", "expected_doc_ids": ["sec_0001045810_000104581026000051"], "category": "single_document", "answerable": true}
+{"id": "s02", "question": "How much did Amazon and Meta each report in capital expenditures for the full year 2025?", "expected_doc_ids": [["sec_0001018724_000101872426000002"], ["sec_0001326801_000162828026003832"]], "category": "multi_document", "answerable": true}
+{"id": "s03", "question": "What remaining performance obligation did Salesforce report in its fourth quarter fiscal 2026 earnings release?", "expected_doc_ids": ["sec_0001108524_000110852426000056"], "category": "single_document", "answerable": true}
+{"id": "s04", "question": "Quais foram as projeções (guidance) do Bradesco para 2025?", "expected_doc_ids": ["cvm_bbdc4_67a92c344696"], "category": "single_document", "answerable": true}
+{"id": "s05", "question": "Qual é o market share do Nubank na carteira de crédito segundo o BACEN?", "expected_doc_ids": ["bacen_ifdata_202603"], "category": "structured", "answerable": true}
+{"id": "s90", "question": "What was Apple's iPhone revenue in fiscal year 2024?", "expected_doc_ids": [], "category": "unanswerable", "answerable": false}
