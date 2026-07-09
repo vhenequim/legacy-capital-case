@@ -38,3 +38,6 @@ GuiaEstudo_LegacyRetrieval.jsx
 
 # Config de tooling local do Claude Code
 .claude/
+
+# Materiais de preparacao pessoal para a apresentacao (nao sao deliverable)
+prep/
